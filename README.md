@@ -7,6 +7,8 @@ This extension adds a HUD on the right center of your screen showing every color
 
 ![image](https://github.com/user-attachments/assets/7bef49fb-a8d5-44c1-bbfe-20332439944e)
 
+Also performance is not tested at all and not guaranteed to work smooth and perfectly
+
 ## Installation Instructions
 
 ### Install on Chrome
