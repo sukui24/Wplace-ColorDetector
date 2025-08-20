@@ -1,11 +1,19 @@
-# Wplace-ColorDetector
-A palette color detector for wplace.live that makes color detection easier
+# Wplace-HelperUtils
+A set of Quality of Life utils for wplace.live web game.
 
 ## Overview
 
-This extension adds a HUD on the right center of your screen showing every color that you're hovered on. This makes color detection easier. It's still unstable and it is possible that it will display wrong color or not display color at all, but for at least free colors it seems to be working fine.
+This extension adds a draggable HUD(s):
 
-![image](https://github.com/user-attachments/assets/7bef49fb-a8d5-44c1-bbfe-20332439944e)
+1. Color Detector - shows every color that you're hovered on. This makes color detection easier. It's still unstable and it is possible that it will display wrong color or not display color at all, but for at least free colors it seems to be working fine.
+
+<img width="830" height="301" alt="image" src="https://github.com/user-attachments/assets/ec2fab2b-5701-4e1e-bec6-adeaca293713" />
+
+
+2. Area Calculator - Helps when you want to calculate an area of pixels. Simply set first corner (e.g. Top-Left) and second opposite corner (e.g. Bottom-Right) and it will calculate the area for you.
+
+<img width="374" height="355" alt="image" src="https://github.com/user-attachments/assets/fa3085cd-7c08-4c04-8278-b1306e359198" />
+
 
 Also performance is not tested at all and it's not guaranteed that extenstion will work smooth and perfect.
 
