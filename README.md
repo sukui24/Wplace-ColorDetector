@@ -10,7 +10,7 @@ This extension adds a draggable HUD(s):
 <img width="830" height="301" alt="image" src="https://github.com/user-attachments/assets/ec2fab2b-5701-4e1e-bec6-adeaca293713" />
 
 
-2. Area Calculator - Helps when you want to calculate an area of pixels. Simply set first corner (e.g. Top-Left) and second opposite corner (e.g. Bottom-Right) and it will calculate the area for you.
+2. Area Calculator - Helps when you want to calculate an area of pixels. Simply set first corner (e.g. Top-Left) and second opposite corner (e.g. Bottom-Right) and it will calculate the area for you. To set a point you need to click somewhere on map to make a panel on bottom pop up. Then press "Set"
 
 <img width="374" height="355" alt="image" src="https://github.com/user-attachments/assets/fa3085cd-7c08-4c04-8278-b1306e359198" />
 
