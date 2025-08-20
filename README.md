@@ -14,8 +14,10 @@ This extension adds a draggable HUD(s):
 
 <img width="374" height="355" alt="image" src="https://github.com/user-attachments/assets/fa3085cd-7c08-4c04-8278-b1306e359198" />
 
+3. Smart Brush - Automaticalaly changes selected color to the one that you hovered on. So you enable Smart Brush - hover on colored pixel from Blue Marble template - start painting - color changes automatically - painting procceds. Smart Brush is can be toggled, so you can enable it to constantly change colors and then disable.
 
-Also performance is not tested at all and it's not guaranteed that extenstion will work smooth and perfect.
+
+**IMPORTANT NOTE**: Performance is not tested at all and it's not guaranteed that extenstion will work smooth and perfect.
 
 ## Installation Instructions
 
