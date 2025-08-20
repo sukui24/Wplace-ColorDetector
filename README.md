@@ -26,7 +26,7 @@ Also performance is not tested at all and it's not guaranteed that extenstion wi
 3. Left-click **"Manage Extension."**  
 4. Enable **"Developer Mode."**  
 5. Enable **"Allow user scripts."**
-6. **One-click install:** [Install Color Detector](https://github.com/sukui24/Wplace-ColorDetector/releases/download/v0.2.0/WplaceColorDetector.user.js)  
+6. **One-click install:** [Install Color Detector](https://github.com/sukui24/Wplace-ColorDetector/releases/download/v0.3.0/WplaceHelperUtils.user.js)  
    TamperMonkey will automatically detect the userscript and prompt you to install it.
 7. Refresh [wplace.live](https://wplace.live/).
 
@@ -50,6 +50,6 @@ Also performance is not tested at all and it's not guaranteed that extenstion wi
 ### Install on Firefox
 
 1. Install the [TamperMonkey](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/) extension for Firefox.
-2. **One-click install:** [Install Color Detector](https://github.com/sukui24/Wplace-ColorDetector/releases/download/v0.2.0/WplaceColorDetector.user.js)  
+2. **One-click install:** [Install Color Detector](https://github.com/sukui24/Wplace-ColorDetector/releases/download/v0.3.0/WplaceHelperUtils.user.js)  
    TamperMonkey will automatically detect the userscript and prompt you to install it.
 3. Refresh [wplace.live](https://wplace.live/).
