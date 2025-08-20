@@ -26,7 +26,7 @@ Also performance is not tested at all and it's not guaranteed that extenstion wi
 3. Left-click **"Manage Extension."**  
 4. Enable **"Developer Mode."**  
 5. Enable **"Allow user scripts."**
-6. **One-click install:** [Install Color Detector](https://github.com/sukui24/Wplace-ColorDetector/releases/download/v0.3.0/WplaceHelperUtils.user.js)  
+6. **One-click install:** [Install Helper Utils](https://github.com/sukui24/Wplace-HelperUtils/releases/download/v0.3.0/WplaceHelperUtils.user.js)  
    TamperMonkey will automatically detect the userscript and prompt you to install it.
 7. Refresh [wplace.live](https://wplace.live/).
 
@@ -38,11 +38,11 @@ Also performance is not tested at all and it's not guaranteed that extenstion wi
 2. Right-click the extension.
 3. Left-click **"Manage Extension."**  
 4. Enable **"Developer Mode."**  
-5. Download [WplaceColorDetector.user.js](https://github.com/sukui24/Wplace-ColorDetector/releases/) from the latest release.
+5. Download [WplaceHelperUtils.user.js](https://github.com/sukui24/Wplace-HelperUtils/releases/) from the latest release.
 6. Open the TamperMonkey Dashboard.  
-7. Drag the `WplaceColorDetector.user.js` file into the TamperMonkey dashboard.
+7. Drag the `WplaceHelperUtils.user.js` file into the TamperMonkey dashboard.
 8. Click **"Install"**.  
-9. Enable Color detector inside the TamperMonkey dashboard.  
+9. Enable Helper Utils inside the TamperMonkey dashboard.  
 10. Refresh [wplace.live](https://wplace.live/).
 
 ---
@@ -50,6 +50,6 @@ Also performance is not tested at all and it's not guaranteed that extenstion wi
 ### Install on Firefox
 
 1. Install the [TamperMonkey](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/) extension for Firefox.
-2. **One-click install:** [Install Color Detector](https://github.com/sukui24/Wplace-ColorDetector/releases/download/v0.3.0/WplaceHelperUtils.user.js)  
+2. **One-click install:** [Install Helper Utils](https://github.com/sukui24/Wplace-HelperUtils/releases/download/v0.3.0/WplaceHelperUtils.user.js)  
    TamperMonkey will automatically detect the userscript and prompt you to install it.
 3. Refresh [wplace.live](https://wplace.live/).
