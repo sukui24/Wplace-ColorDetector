@@ -1,11 +1,11 @@
 // ==UserScript==
-// @name         wplace.live color detector on hover
+// @name         wplace.live helper utils
 // @version      0.3.0
 // @match        https://wplace.live/*
 // @run-at       document-start
 // @grant        none
-// @updateURL    https://raw.githubusercontent.com/sukui24/Wplace-ColorDetector/main/assets/WplaceColorDetector.user.js
-// @downloadURL  https://raw.githubusercontent.com/sukui24/Wplace-ColorDetector/main/assets/WplaceColorDetector.user.js
+// @updateURL    https://raw.githubusercontent.com/sukui24/Wplace-ColorDetector/main/assets/WplaceHelperUtils.user.js
+// @downloadURL  https://raw.githubusercontent.com/sukui24/Wplace-ColorDetector/main/assets/WplaceHelperUtils.user.js
 // ==/UserScript==
 
 (() => {
