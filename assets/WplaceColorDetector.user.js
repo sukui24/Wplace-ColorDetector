@@ -1,7 +1,6 @@
 // ==UserScript==
 // @name         wplace.live color detector on hover
-// @description  wplace.live color detector on hover
-// @version      0.2.0
+// @version      0.3.0
 // @match        https://wplace.live/*
 // @run-at       document-start
 // @grant        none
@@ -206,24 +205,441 @@
 
     // HUD
     const hud = document.createElement('div');
+    
+    // Get saved position for HUD or use default
+    const savedHudPosition = localStorage.getItem('colorDetectorPosition');
+    let hudPosition = savedHudPosition ? JSON.parse(savedHudPosition) : { right: 20, top: '60%' };
+    
+    // Convert right position to left position for right-side expansion
+    const windowWidth = window.innerWidth;
+    const leftPosition = windowWidth - hudPosition.right - 250; // 250 is minimum width
+
     Object.assign(hud.style, {
       position: 'fixed',
-      right: '20px',
-      top: '60%',
-      transform: 'translateY(-50%)',
+      left: leftPosition + 'px',
+      top: typeof hudPosition.top === 'string' ? hudPosition.top : hudPosition.top + 'px',
+      transform: typeof hudPosition.top === 'string' ? 'translateY(-50%)' : 'none',
       zIndex: 999999,
       font: '16px/1.4 monospace',
       padding: '12px 16px',
-      background: 'rgba(0,0,0,.8)',
+      background: 'rgba(0,0,0,0.75)',
       color: '#fff',
       borderRadius: '12px',
-      pointerEvents: 'none',
-      whiteSpace: 'pre',
+      pointerEvents: 'auto',
+      whiteSpace: 'nowrap',
       display: 'flex',
       flexDirection: 'column',
       gap: '4px',
+      cursor: 'move',
+      userSelect: 'none',
+      minWidth: '250px',
+      width: 'fit-content',
+      maxWidth: '400px',
+      boxSizing: 'border-box',
     });
+
+    // HUD Dragging functionality
+    let isHudDragging = false;
+    let hudDragOffset = { x: 0, y: 0 };
+
+    const startHudDrag = (e) => {
+      isHudDragging = true;
+      const rect = hud.getBoundingClientRect();
+      hudDragOffset.x = e.clientX - rect.left;
+      hudDragOffset.y = e.clientY - rect.top;
+      hud.style.cursor = 'grabbing';
+      hud.style.opacity = '0.8';
+    };
+
+    const doHudDrag = (e) => {
+      if (!isHudDragging) return;
+      e.preventDefault();
+      
+      const x = e.clientX - hudDragOffset.x;
+      const y = e.clientY - hudDragOffset.y;
+      
+      // Calculate position relative to viewport edges
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      const hudWidth = hud.offsetWidth;
+      const hudHeight = hud.offsetHeight;
+      
+      // Constrain to viewport bounds with some padding
+      const padding = 10;
+      const left = Math.max(padding, Math.min(x, windowWidth - hudWidth - padding));
+      const top = Math.max(padding, Math.min(y, windowHeight - hudHeight - padding));
+      
+      // Set position using left/top for easier calculation
+      hud.style.left = left + 'px';
+      hud.style.top = top + 'px';
+      hud.style.right = 'auto';
+      hud.style.transform = 'none';
+    };
+
+    const stopHudDrag = () => {
+      if (!isHudDragging) return;
+      isHudDragging = false;
+      hud.style.cursor = 'move';
+      hud.style.opacity = '1';
+      
+      // Save position to localStorage (convert left back to right for consistency)
+      const rect = hud.getBoundingClientRect();
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      
+      // Convert to right/top coordinates for consistency with storage format
+      const savedPos = {
+        right: windowWidth - rect.right,
+        top: rect.top
+      };
+      
+      localStorage.setItem('colorDetectorPosition', JSON.stringify(savedPos));
+    };
+
+    hud.addEventListener('mousedown', startHudDrag);
+    
+    // Combined mouse event handlers for both draggable elements
+    document.addEventListener('mousemove', (e) => {
+      doHudDrag(e);
+      doDrag(e);
+    });
+    
+    document.addEventListener('mouseup', () => {
+      stopHudDrag();
+      stopDrag();
+    });
+
+    // Handle window resize for HUD
+    window.addEventListener('resize', () => {
+      // Handle HUD repositioning
+      if (!isHudDragging) {
+        const savedPosition = localStorage.getItem('colorDetectorPosition');
+        if (savedPosition) {
+          const pos = JSON.parse(savedPosition);
+          const windowWidth = window.innerWidth;
+          const leftPos = windowWidth - pos.right - 250; // Recalculate left from right
+          hud.style.left = leftPos + 'px';
+          hud.style.top = pos.top + 'px';
+          hud.style.right = 'auto';
+          hud.style.transform = 'none';
+        }
+      }
+      
+      // Handle Area Panel repositioning
+      if (!isDragging) {
+        const savedPosition = localStorage.getItem('areaCalculatorPosition');
+        if (savedPosition) {
+          const pos = JSON.parse(savedPosition);
+          areaPanel.style.right = pos.right + 'px';
+          areaPanel.style.bottom = pos.bottom + 'px';
+          areaPanel.style.left = 'auto';
+          areaPanel.style.top = 'auto';
+        }
+      }
+    });
+
     document.body.appendChild(hud);
+
+    // Area Calculator Panel
+    const areaPanel = document.createElement('div');
+    
+    // Get saved position or use default bottom-right
+    const savedPosition = localStorage.getItem('areaCalculatorPosition');
+    let position = savedPosition ? JSON.parse(savedPosition) : { right: 20, bottom: 20 };
+    
+    Object.assign(areaPanel.style, {
+      position: 'fixed',
+      right: position.right + 'px',
+      bottom: position.bottom + 'px',
+      zIndex: 999998,
+      font: '14px/1.4 monospace',
+      padding: '16px',
+      background: 'rgba(0,0,0,0.75)',
+      color: '#fff',
+      borderRadius: '12px',
+      pointerEvents: 'auto',
+      width: '300px',
+      maxWidth: '300px',
+      border: '1px solid rgba(255,255,255,.2)',
+      cursor: 'move',
+      userSelect: 'none',
+      boxSizing: 'border-box',
+    });
+
+    // Dragging functionality
+    let isDragging = false;
+    let dragOffset = { x: 0, y: 0 };
+
+    const startDrag = (e) => {
+      // Only allow dragging from the header area or drag handle
+      const dragHandle = document.getElementById('drag-handle');
+      if (!dragHandle || (!dragHandle.contains(e.target) && e.target.tagName === 'BUTTON')) return;
+      
+      isDragging = true;
+      const rect = areaPanel.getBoundingClientRect();
+      dragOffset.x = e.clientX - rect.left;
+      dragOffset.y = e.clientY - rect.top;
+      areaPanel.style.cursor = 'grabbing';
+      
+      // Add visual feedback
+      areaPanel.style.opacity = '0.8';
+    };
+
+    const doDrag = (e) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      
+      const x = e.clientX - dragOffset.x;
+      const y = e.clientY - dragOffset.y;
+      
+      // Calculate position relative to viewport edges
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      const panelWidth = areaPanel.offsetWidth;
+      const panelHeight = areaPanel.offsetHeight;
+      
+      // Constrain to viewport bounds with some padding
+      const padding = 10;
+      const left = Math.max(padding, Math.min(x, windowWidth - panelWidth - padding));
+      const top = Math.max(padding, Math.min(y, windowHeight - panelHeight - padding));
+      
+      // Set position using left/top instead of right/bottom for easier calculation
+      areaPanel.style.left = left + 'px';
+      areaPanel.style.top = top + 'px';
+      areaPanel.style.right = 'auto';
+      areaPanel.style.bottom = 'auto';
+    };
+
+    const stopDrag = () => {
+      if (!isDragging) return;
+      isDragging = false;
+      areaPanel.style.cursor = 'move';
+      areaPanel.style.opacity = '1';
+      
+      // Save position to localStorage
+      const rect = areaPanel.getBoundingClientRect();
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      
+      // Convert to right/bottom coordinates for consistency
+      const savedPos = {
+        right: windowWidth - rect.right,
+        bottom: windowHeight - rect.bottom
+      };
+      
+      localStorage.setItem('areaCalculatorPosition', JSON.stringify(savedPos));
+    };
+
+    areaPanel.addEventListener('mousedown', startDrag);
+
+    // Area calculation state
+    let topLeft = null;
+    let bottomRight = null;
+    let currentPixel = {x: 0, y: 0, tlX: 0, tlY: 0, pxX: 0, pxY: 0};
+    let isExpanded = true;
+    
+    // Settings state
+    let showAreaCalculator = localStorage.getItem('showAreaCalculator') !== 'false'; // default true
+    let showSettings = false;
+
+    // Function to get coordinates from the #bm-h element
+    const getCoordinatesFromBmH = () => {
+      const bmhElement = document.querySelector('#bm-h');
+      if (bmhElement) {
+        const text = bmhElement.textContent;
+        const match = text.match(/\(Tl X: (\d+), Tl Y: (\d+), Px X: (\d+), Px Y: (\d+)\)/);
+        if (match) {
+          return {
+            tlX: parseInt(match[1]),
+            tlY: parseInt(match[2]),
+            pxX: parseInt(match[3]),
+            pxY: parseInt(match[4]),
+            finalX: parseInt(match[1]) * 1000 + parseInt(match[3]),
+            finalY: parseInt(match[2]) * 1000 + parseInt(match[4])
+          };
+        }
+      }
+      return null;
+    };
+
+    // Create area panel content
+    const updateAreaPanel = () => {
+      let area = 0;
+      let width = 0;
+      let height = 0;
+      
+      if (topLeft && bottomRight) {
+        // Calculate using the proper formula: (Tl X * 1000) + Px X
+        const tlFinalX = (topLeft.tlX * 1000) + topLeft.pxX;
+        const tlFinalY = (topLeft.tlY * 1000) + topLeft.pxY;
+        const brFinalX = (bottomRight.tlX * 1000) + bottomRight.pxX;
+        const brFinalY = (bottomRight.tlY * 1000) + bottomRight.pxY;
+        
+        // Calculate absolute differences
+        width = Math.abs(brFinalX - tlFinalX) + 1;
+        height = Math.abs(brFinalY - tlFinalY) + 1;
+        area = width * height;
+      }
+
+      const expandedContent = `
+        <div style="margin-bottom: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
+            <span style="width: 80px; flex-shrink: 0;">Corner 1:</span>
+            <span style="color: ${topLeft ? '#4ade80' : '#94a3b8'}; word-wrap: break-word; flex: 1; min-width: 0;">
+              ${topLeft ? `${((topLeft.tlX * 1000) + topLeft.pxX).toLocaleString()}, ${((topLeft.tlY * 1000) + topLeft.pxY).toLocaleString()}` : 'Not set'}
+            </span>
+            <button id="geo-tl" style="
+              background: #3b82f6; 
+              color: white; 
+              border: none; 
+              padding: 4px 8px; 
+              border-radius: 4px; 
+              font-size: 12px; 
+              cursor: pointer;
+              font-family: monospace;
+              pointer-events: auto;
+              flex-shrink: 0;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            ">Set</button>
+          </div>
+        </div>
+        
+        <div style="margin-bottom: 12px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
+            <span style="width: 80px; flex-shrink: 0;">Corner 2:</span>
+            <span style="color: ${bottomRight ? '#4ade80' : '#94a3b8'}; word-wrap: break-word; flex: 1; min-width: 0;">
+              ${bottomRight ? `${((bottomRight.tlX * 1000) + bottomRight.pxX).toLocaleString()}, ${((bottomRight.tlY * 1000) + bottomRight.pxY).toLocaleString()}` : 'Not set'}
+            </span>
+            <button id="geo-br" style="
+              background: #3b82f6; 
+              color: white; 
+              border: none; 
+              padding: 4px 8px; 
+              border-radius: 4px; 
+              font-size: 12px; 
+              cursor: pointer;
+              font-family: monospace;
+              pointer-events: auto;
+              flex-shrink: 0;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            ">Set</button>
+          </div>
+        </div>
+        
+        <div style="padding: 8px; background: rgba(255,255,255,.1); border-radius: 6px; word-wrap: break-word;">
+          <div style="font-weight: bold; color: ${area > 0 ? '#fbbf24' : '#94a3b8'};">
+            Area: ${area > 0 ? area.toLocaleString() : '0'} pixels
+          </div>
+          ${area > 0 ? `
+            <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">
+              Width: ${width.toLocaleString()} × Height: ${height.toLocaleString()}
+            </div>
+          ` : ''}
+        </div>
+        
+        <div style="margin-top: 12px;">
+          <button id="clear-area" style="
+            background: #ef4444; 
+            color: white; 
+            border: none; 
+            padding: 6px 12px; 
+            border-radius: 6px; 
+            font-size: 12px; 
+            cursor: pointer;
+            font-family: monospace;
+            pointer-events: auto;
+          ">Clear</button>
+        </div>
+      `;
+
+      areaPanel.innerHTML = `
+        <div id="drag-handle" style="
+          display: flex; 
+          align-items: center; 
+          justify-content: space-between; 
+          margin-bottom: ${isExpanded ? '12px' : '0'};
+          cursor: move;
+          padding: 4px 0;
+          border-bottom: ${isExpanded ? '1px solid rgba(255,255,255,.1)' : 'none'};
+          margin-bottom: ${isExpanded ? '8px' : '0'};
+        ">
+          <div style="font-weight: bold; color: #4ade80;">
+            Area Calculator
+          </div>
+          <button id="expand-toggle" style="
+            background: none; 
+            color: white; 
+            border: 1px solid rgba(255,255,255,.3); 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            font-size: 12px; 
+            cursor: pointer;
+            font-family: monospace;
+          ">${isExpanded ? '−' : '+'}</button>
+        </div>
+        ${isExpanded ? expandedContent : ''}
+      `;
+
+      // Add event listeners for buttons
+      const geoTlBtn = document.getElementById('geo-tl');
+      const geoBrBtn = document.getElementById('geo-br');
+      const clearBtn = document.getElementById('clear-area');
+      const expandBtn = document.getElementById('expand-toggle');
+
+      if (expandBtn) {
+        expandBtn.addEventListener('click', () => {
+          isExpanded = !isExpanded;
+          updateAreaPanel();
+        });
+      }
+
+      if (geoTlBtn) {
+        geoTlBtn.addEventListener('click', () => {
+          const coords = getCoordinatesFromBmH();
+          if (coords) {
+            topLeft = {
+              tlX: coords.tlX,
+              tlY: coords.tlY,
+              pxX: coords.pxX,
+              pxY: coords.pxY
+            };
+            updateAreaPanel();
+          }
+        });
+      }
+
+      if (geoBrBtn) {
+        geoBrBtn.addEventListener('click', () => {
+          const coords = getCoordinatesFromBmH();
+          if (coords) {
+            bottomRight = {
+              tlX: coords.tlX,
+              tlY: coords.tlY,
+              pxX: coords.pxX,
+              pxY: coords.pxY
+            };
+            updateAreaPanel();
+          }
+        });
+      }
+
+      if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+          topLeft = null;
+          bottomRight = null;
+          updateAreaPanel();
+        });
+      }
+    };
+
+    updateAreaPanel();
+    if (showAreaCalculator) {
+      document.body.appendChild(areaPanel);
+    }
 
     let rafPending = false;
     let lastMouse;
@@ -257,6 +673,10 @@
         ),
       );
 
+      // Update current pixel coordinates for area calculator (keep as fallback)
+      currentPixel = {x, y};
+      updateAreaPanel();
+
       const out = new Uint8Array(4);
       try {
         gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, out);
@@ -279,9 +699,63 @@
         ? `<span style="display: inline-block; width: 16px; height: 16px; background-color: rgb(${match.rgb[0]},${match.rgb[1]},${match.rgb[2]}); border: 1px solid #fff; margin-left: 8px; vertical-align: middle;"></span>`
         : '';
 
+      const settingsContent = `
+        <div style="padding: 8px; background: rgba(255,255,255,.05); border-radius: 6px; margin-top: 8px;">
+          <div style="font-weight: bold; margin-bottom: 8px; color: #60a5fa;">Settings</div>
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;">
+            <input type="checkbox" id="area-calc-toggle" ${showAreaCalculator ? 'checked' : ''} style="margin: 0;">
+            <span>Show Area Calculator</span>
+          </label>
+        </div>
+      `;
+
       hud.innerHTML =
+        `<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,.2);">
+          <span style="font-weight: bold; color: #60a5fa; flex: 1;">Color Detector</span>
+          <button id="settings-toggle" style="
+            background: none; 
+            color: white; 
+            padding: 4px 6px; 
+            border-radius: 4px; 
+            font-size: 24px; 
+            cursor: pointer;
+            font-family: monospace;
+          ">⚙</button>
+        </div>` +
         `<div>RGB: ${det[0]},${det[1]},${det[2]}</div>` +
-        `<div style="display: flex; align-items: center;">${paletteLine}${colorSquare}</div>`;
+        `<div style="display: flex; align-items: center; gap: 8px;"><span style="flex-shrink: 0;">${paletteLine}</span>${colorSquare}</div>` +
+        (showSettings ? settingsContent : '');
+
+      // Add event listener for settings toggle
+      const settingsBtn = document.getElementById('settings-toggle');
+      if (settingsBtn) {
+        settingsBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          showSettings = !showSettings;
+          // Re-trigger sample to update display
+          if (lastMouse) {
+            requestAnimationFrame(() => sample(performance.now()));
+          }
+        });
+      }
+
+      // Add event listener for area calculator toggle
+      const areaToggle = document.getElementById('area-calc-toggle');
+      if (areaToggle) {
+        areaToggle.addEventListener('change', (e) => {
+          e.stopPropagation();
+          showAreaCalculator = e.target.checked;
+          localStorage.setItem('showAreaCalculator', showAreaCalculator.toString());
+          
+          if (showAreaCalculator) {
+            document.body.appendChild(areaPanel);
+          } else {
+            if (areaPanel.parentNode) {
+              areaPanel.parentNode.removeChild(areaPanel);
+            }
+          }
+        });
+      }
     };
 
     canvas.addEventListener(
@@ -296,6 +770,6 @@
       {passive: true},
     );
 
-    console.log('[wplace] pixel sampler ready (WebGL, detint + palette).');
+    console.log('[wplace] pixel sampler ready (WebGL, detint + palette + area calculator).');
   })();
 })();
