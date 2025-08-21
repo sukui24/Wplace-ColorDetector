@@ -1,3 +1,14 @@
+// ==UserScript==
+// @name         wplace.live helper utils
+// @description  A set of Quality of Life tools for wplace.live website
+// @version      0.4.2
+// @match        https://wplace.live/*
+// @run-at       document-start
+// @grant        none
+// @updateURL    https://github.com/sukui24/Wplace-HelperUtils/releases/latest/download/WplaceHelperUtils.user.js
+// @downloadURL  https://github.com/sukui24/Wplace-HelperUtils/releases/latest/download/WplaceHelperUtils.user.js
+// ==/UserScript==
+
 (() => {
   // ---- Palette (full) ----
   const colorpalette = [
