@@ -28,7 +28,7 @@ This extension adds a draggable HUD(s):
 3. Left-click **"Manage Extension."**  
 4. Enable **"Developer Mode."**  
 5. Enable **"Allow user scripts."**
-6. **One-click install:** [Install Helper Utils](https://github.com/sukui24/Wplace-HelperUtils/releases/download/v0.4.0/WplaceHelperUtils.user.js)  
+6. **One-click install:** [Install Helper Utils](https://github.com/sukui24/Wplace-HelperUtils/releases/latest/download/WplaceHelperUtils.user.js)  
    TamperMonkey will automatically detect the userscript and prompt you to install it.
 7. Refresh [wplace.live](https://wplace.live/).
 
@@ -52,6 +52,6 @@ This extension adds a draggable HUD(s):
 ### Install on Firefox
 
 1. Install the [TamperMonkey](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/) extension for Firefox.
-2. **One-click install:** [Install Helper Utils](https://github.com/sukui24/Wplace-HelperUtils/releases/download/v0.4.0/WplaceHelperUtils.user.js)  
+2. **One-click install:** [Install Helper Utils](https://github.com/sukui24/Wplace-HelperUtils/releases/latest/download/WplaceHelperUtils.user.js)  
    TamperMonkey will automatically detect the userscript and prompt you to install it.
 3. Refresh [wplace.live](https://wplace.live/).
