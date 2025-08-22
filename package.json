@@ -3,7 +3,7 @@
   "version": "0.4.1",
   "private": true,
   "scripts": {
-    "build": "terser assets/WplaceHelperUtils.user.js -o dist/WplaceHelperUtils.user.js --comments '/==UserScript==/' -c -m"
+    "build": "mkdir -p dist && terser src/WplaceHelperUtils.user.js -o dist/WplaceHelperUtils.user.js --comments '/UserScript|@name|@description|@version|@match|@run-at|@grant|@updateURL|@downloadURL/' -c -m"
   },
   "devDependencies": {
     "terser": "^5.19.2"

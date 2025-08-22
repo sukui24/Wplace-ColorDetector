@@ -19,9 +19,12 @@ jobs:
       - name: Install dependencies
         run: npm install terser
 
+      - name: Create dist directory
+        run: mkdir -p dist
+
       - name: Minify JavaScript
         run: |
-          npx terser src/WplaceHelperUtils.user.js -o dist/WplaceHelperUtils.user.js --comments '/==UserScript==/' -c -m
+          npx terser src/WplaceHelperUtils.user.js -o dist/WplaceHelperUtils.user.js --comments '/UserScript|@name|@description|@version|@match|@run-at|@grant|@updateURL|@downloadURL/' -c -m
 
       - name: Create Release
         id: create_release
@@ -31,6 +34,5 @@ jobs:
           files: dist/WplaceHelperUtils.user.js
           draft: false
           prerelease: false
-          make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
