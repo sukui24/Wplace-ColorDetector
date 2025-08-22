@@ -1,0 +1,11 @@
+{
+  "name": "wplace-helper-utils",
+  "version": "0.4.1",
+  "private": true,
+  "scripts": {
+    "build": "terser assets/WplaceHelperUtils.user.js -o dist/WplaceHelperUtils.user.js --comments '/==UserScript==/' -c -m"
+  },
+  "devDependencies": {
+    "terser": "^5.19.2"
+  }
+}
