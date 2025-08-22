@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         wplace.live helper utils
 // @description  A set of Quality of Life tools for wplace.live website
-// @version      0.4.1
+// @version      0.4.3
 // @match        https://wplace.live/*
 // @run-at       document-start
 // @grant        none
