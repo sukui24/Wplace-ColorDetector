@@ -317,25 +317,6 @@
     paletteDisplay.appendChild(paletteText);
     paletteDisplay.appendChild(colorSquare);
 
-    const controlsDiv = document.createElement("div");
-    controlsDiv.style.cssText = "display: flex; align-items: center; gap: 8px;";
-
-    const smartBrushBtn = document.createElement("button");
-    smartBrushBtn.id = "smart-brush-toggle";
-    smartBrushBtn.style.cssText =
-      "background: none; color: white; border: 1px solid rgba(255,255,255,0.3); padding: 6px 8px; border-radius: 4px; font-size: 14px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;";
-    smartBrushBtn.title =
-      "Smart Brush - Automatically select colors while painting with spacebar or mouse. Detects the color you're hovering over and switches to it before painting.";
-    smartBrushBtn.textContent = "🖌️ Smart Brush";
-
-    const smartBrushIndicator = document.createElement("div");
-    smartBrushIndicator.style.cssText =
-      "width: 8px; height: 8px; background: #22c55e; border-radius: 50%; flex-shrink: 0; display: none;";
-    smartBrushIndicator.title = "Color available for painting";
-
-    controlsDiv.appendChild(smartBrushBtn);
-    controlsDiv.appendChild(smartBrushIndicator);
-
     const settingsPanel = document.createElement("div");
     settingsPanel.style.cssText =
       "padding: 8px; background: rgba(255,255,255,.05); border-radius: 6px; margin-top: 8px; display: none;";
@@ -367,7 +348,6 @@
     hud.appendChild(hudHeader);
     hud.appendChild(rgbDisplay);
     hud.appendChild(paletteDisplay);
-    hud.appendChild(controlsDiv);
     hud.appendChild(settingsPanel);
 
     // HUD Dragging functionality
@@ -854,19 +834,9 @@
       }
     });
 
-    // Smart brush state
-    let isSmartBrushActive = false;
-    let lastDetectedColor = null;
-    let lastSelectedColorId = null; // Track the last color we actually selected
-
-    // Smart brush debouncing for performance
-    let smartBrushDebounce = null;
-    const SMART_BRUSH_DEBOUNCE_MS = 16; // ~60fps limit for color selection
-
     // Performance: Cache last HUD content to avoid unnecessary DOM updates
     let lastRgbValues = "";
     let lastPaletteLine = "";
-    let lastSmartBrushState = false;
     let lastMouseX = -1;
     let lastMouseY = -1;
     let hudUpdatePending = false; // Prevent HUD update storms
@@ -878,30 +848,6 @@
         e.stopPropagation();
         showSettings = !showSettings;
         settingsPanel.style.display = showSettings ? "block" : "none";
-      });
-
-      // Smart brush toggle
-      smartBrushBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        isSmartBrushActive = !isSmartBrushActive;
-
-        // Update button appearance
-        if (isSmartBrushActive) {
-          smartBrushBtn.style.background = "rgba(34, 197, 94, 0.3)";
-          smartBrushBtn.style.border = "2px solid #22c55e";
-          lastSelectedColorId = null;
-          console.log("[Smart Brush] Activated - ready to detect colors");
-        } else {
-          smartBrushBtn.style.background = "none";
-          smartBrushBtn.style.border = "1px solid rgba(255,255,255,0.3)";
-          console.log("[Smart Brush] Deactivated");
-        }
-
-        // Trigger update using protected RAF pattern
-        if (lastMouse && !rafPending) {
-          rafPending = true;
-          requestAnimationFrame(sample);
-        }
       });
 
       // Area calculator toggle
@@ -933,20 +879,6 @@
         colorSquare.style.display = "inline-block";
       } else {
         colorSquare.style.display = "none";
-      }
-
-      // Update smart brush indicator
-      if (
-        isSmartBrushActive &&
-        match &&
-        !(
-          match.premium &&
-          document.querySelector(`#color-${match.id}`)?.querySelector("svg")
-        )
-      ) {
-        smartBrushIndicator.style.display = "block";
-      } else {
-        smartBrushIndicator.style.display = "none";
       }
 
       // Update settings checkbox
@@ -1028,9 +960,6 @@
 
       let match = matchTinted([r, g, b]) || matchRaw([r, g, b]);
 
-      // Store current match for smart brush functionality
-      lastDetectedColor = match;
-
       const paletteLine = match
         ? `Palette: ${match.name} (id ${match.id})`
         : `Palette: -`;
@@ -1042,16 +971,13 @@
       // Performance: Only update HUD if content has actually changed
       const currentRgbValues = `RGB: ${det.r},${det.g},${det.b}`;
       const hasContentChanged =
-        currentRgbValues !== lastRgbValues ||
-        paletteLine !== lastPaletteLine ||
-        isSmartBrushActive !== lastSmartBrushState;
+        currentRgbValues !== lastRgbValues || paletteLine !== lastPaletteLine;
 
       if (!hasContentChanged) return;
 
       // Cache the current values
       lastRgbValues = currentRgbValues;
       lastPaletteLine = paletteLine;
-      lastSmartBrushState = isSmartBrushActive;
 
       // Update HUD content using efficient DOM updates instead of innerHTML
       updateHudContent(currentRgbValues, paletteLine, match);
@@ -1069,200 +995,14 @@
       { passive: true }
     );
 
-    // Smart brush functionality with performance optimizations
-    const colorButtonCache = new Map(); // Cache color button references
-    let colorCacheTime = 0;
-    const COLOR_CACHE_MS = 1000; // Cache color buttons for 1 second
-    const MAX_COLOR_CACHE_SIZE = 64; // Prevent unlimited cache growth
-
-    const getColorButton = (colorId) => {
-      const now = performance.now();
-      // Clear cache periodically or if it gets too large
-      if (
-        now - colorCacheTime > COLOR_CACHE_MS ||
-        colorButtonCache.size > MAX_COLOR_CACHE_SIZE
-      ) {
-        colorButtonCache.clear();
-        colorCacheTime = now;
-      }
-
-      if (!colorButtonCache.has(colorId)) {
-        const button = document.querySelector(`#color-${colorId}`);
-        if (button) {
-          colorButtonCache.set(colorId, button);
-        }
-      }
-      return colorButtonCache.get(colorId) || null;
-    };
-
-    const selectColorInPalette = (colorId) => {
-      const colorButton = getColorButton(colorId); // Use cached button reference
-      if (colorButton) {
-        // Check if color is locked (has lock icon)
-        const isLocked = colorButton.querySelector("svg") !== null;
-        if (isLocked) {
-          console.log("[Smart Brush] Color is locked, cannot select:", colorId);
-          return false;
-        }
-
-        // Click the color button to select it
-        colorButton.click();
-        console.log("[Smart Brush] Selected color:", colorId);
-        return true;
-      }
-      return false;
-    };
-
-    // Debounced version for performance during rapid drawing operations
-    const selectColorDebounced = (colorId) => {
-      // Simple rate limiting to prevent excessive timeout clearing
-      if (smartBrushDebounce) {
-        clearTimeout(smartBrushDebounce);
-        smartBrushDebounce = null;
-      }
-      smartBrushDebounce = setTimeout(() => {
-        if (selectColorInPalette(colorId)) {
-          lastSelectedColorId = colorId;
-          console.log("[Smart Brush] Debounced color change to:", colorId);
-
-          // Update HUD using protected RAF pattern instead of nested setTimeout + RAF
-          if (lastMouse && !rafPending) {
-            rafPending = true;
-            requestAnimationFrame(sample);
-          }
-        }
-      }, SMART_BRUSH_DEBOUNCE_MS);
-    };
-
-    // Intercept spacebar and mouse down events
-    let smartBrushUsedForCurrentSpacePress = false;
-
-    document.addEventListener(
-      "keydown",
-      (event) => {
-        if (
-          event.code === "Space" &&
-          isSmartBrushActive &&
-          !smartBrushUsedForCurrentSpacePress
-        ) {
-          // Only handle if we're over the canvas
-          if (
-            lastMouse &&
-            document.elementFromPoint(lastMouse.clientX, lastMouse.clientY) ===
-              canvas
-          ) {
-            smartBrushUsedForCurrentSpacePress = true;
-
-            // Don't prevent the event, just select the color immediately if it's different
-            if (
-              lastDetectedColor &&
-              lastDetectedColor.id !== lastSelectedColorId
-            ) {
-              // For premium colors, check if they're locked
-              if (lastDetectedColor.premium) {
-                const colorButton = getColorButton(lastDetectedColor.id); // Use cached button reference
-                if (colorButton && colorButton.querySelector("svg")) {
-                  console.log(
-                    "[Smart Brush] Cannot paint with locked color:",
-                    lastDetectedColor.name
-                  );
-                  event.preventDefault();
-                  event.stopPropagation();
-                  return;
-                }
-              }
-
-              // Select the detected color in the palette only if it's different
-              if (selectColorInPalette(lastDetectedColor.id)) {
-                lastSelectedColorId = lastDetectedColor.id;
-                console.log(
-                  "[Smart Brush] Color changed to:",
-                  lastDetectedColor.name
-                );
-
-                // Update HUD using protected RAF pattern
-                if (lastMouse && !rafPending) {
-                  rafPending = true;
-                  requestAnimationFrame(sample);
-                }
-              }
-            }
-            // Let the spacebar event continue normally after color selection (or if same color)
-          }
-        }
-      },
-      true
-    );
-
-    document.addEventListener(
-      "keyup",
-      (event) => {
-        if (event.code === "Space") {
-          smartBrushUsedForCurrentSpacePress = false;
-        }
-      },
-      true
-    );
-
-    canvas.addEventListener(
-      "mousedown",
-      (event) => {
-        // Only respond to left mouse button (button 0), ignore right-click (button 2)
-        if (event.button !== 0) return;
-
-        if (
-          isSmartBrushActive &&
-          lastDetectedColor &&
-          lastDetectedColor.id !== lastSelectedColorId
-        ) {
-          // For premium colors, check if they're locked using cached value
-          if (lastDetectedColor.premium) {
-            const colorButton = getColorButton(lastDetectedColor.id); // Use cached button reference
-            const isLocked = colorButton && colorButton.querySelector("svg");
-            if (isLocked) {
-              console.log(
-                "[Smart Brush] Cannot paint with locked color:",
-                lastDetectedColor.name
-              );
-              event.preventDefault();
-              event.stopPropagation();
-              return;
-            }
-          }
-
-          // Use debounced selection for mousedown to reduce overhead during rapid drawing
-          selectColorDebounced(lastDetectedColor.id);
-          // Let the mouse event continue normally
-        }
-      },
-      true
-    );
-
     // Periodic cache cleanup to prevent memory leaks
     setInterval(() => {
-      // Force cache cleanup every 30 seconds to prevent memory buildup
-      if (colorButtonCache.size > MAX_COLOR_CACHE_SIZE / 2) {
-        colorButtonCache.clear();
-        console.log("[wplace] Periodic cache cleanup performed");
-      }
-
       // Clear canvas rect cache on interval to ensure freshness
       cachedCanvasRect = null;
     }, 30000);
 
-    // Cleanup function for potential future use
-    window.__wplaceCleanup = () => {
-      colorButtonCache.clear();
-      cachedCanvasRect = null;
-      if (smartBrushDebounce) {
-        clearTimeout(smartBrushDebounce);
-        smartBrushDebounce = null;
-      }
-      console.log("[wplace] Cleanup performed");
-    };
-
     console.log(
-      "[wplace] pixel sampler ready (WebGL, optimized memory usage, detint + palette + area calculator + smart brush)."
+      "[wplace] pixel sampler ready (WebGL, optimized memory usage, detint + palette + area calculator)."
     );
   })();
 })();
