@@ -2,6 +2,10 @@
 
 A set of Quality of Life utils for wplace.live web game.
 
+## Disclaimer
+
+This extension is not meant to be cheat or somehow violate `wplace.live` rules, so if you want us to know that this extension violated some rule - pls create new issue or reach me directly in discord: ```sukui_```. I will remove any "cheat" code, i don't want users to get banned because of me and don't want to get banned myself :)
+
 ## Overview
 
 This extension adds a draggable HUD(s):
